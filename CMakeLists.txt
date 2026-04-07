@@ -90,17 +90,15 @@ write_basic_package_version_file(
 install(EXPORT falcon-typing-targets
   FILE      falcon-typing-targets.cmake
   NAMESPACE falcon::
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/falcon-typing
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/falcon-typing
 )
-
 configure_package_config_file(
   cmake/falcon-typing-config.cmake.in
   "${CMAKE_CURRENT_BINARY_DIR}/falcon-typing-config.cmake"
-  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/falcon-typing
+  INSTALL_DESTINATION ${CMAKE_INSTALL_DATADIR}/falcon-typing
 )
-
 install(FILES
   "${CMAKE_CURRENT_BINARY_DIR}/falcon-typing-config.cmake"
   "${CMAKE_CURRENT_BINARY_DIR}/falcon-typing-config-version.cmake"
-  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/falcon-typing
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/falcon-typing
 )
