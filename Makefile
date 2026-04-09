@@ -13,6 +13,8 @@ ifeq ($(UNAME_S),Linux)
     VCPKG_TRIPLET   ?= x64-linux-dynamic
     NPROC           := $(shell nproc 2>/dev/null || echo 4)
     SUDO            ?= sudo
+		export CC=clang
+		export CXX=clang++
 endif
 ifeq ($(OS),Windows_NT)
     PLATFORM        := windows
@@ -38,10 +40,12 @@ FEED_URL ?=
 NUGET_API_KEY ?=
 FEED_NAME ?= 
 USERNAME ?=
+VCPKG_BINARY_SOURCES ?= 
 ifeq ($(strip $(FEED_URL)),)
   CMAKE_VCPKG_BINARY_SOURCES :=
 else
-  CMAKE_VCPKG_BINARY_SOURCES := -DVCPKG_BINARY_SOURCES="clear;nuget,$(FEED_URL),readwrite"
+	VCPKG_BINARY_SOURCES := "clear;nuget,$(FEED_URL),readwrite"
+  CMAKE_VCPKG_BINARY_SOURCES := -DVCPKG_BINARY_SOURCES=$(VCPKG_BINARY_SOURCES)
 endif
 
 BUILD_DIR_DEBUG   := build/debug
@@ -111,9 +115,9 @@ setup-nuget-auth:
 .PHONY: vcpkg-install-deps
 vcpkg-install-deps: setup-nuget-auth 
 	@echo "Installing vcpkg dependencies" 
-	@CC=clang CXX=clang++ VCPKG_FEATURE_FLAGS=binarycaching \
+	VCPKG_FEATURE_FLAGS=binarycaching \
 		$(VCPKG_ROOT)/vcpkg install \
-		--binarysource="$(VCPKG_BINARY_SOURCES)" \
+		--binarysource=$(VCPKG_BINARY_SOURCES) \
 		--triplet="$(VCPKG_TRIPLET)"
 
 check-vcpkg: vcpkg-bootstrap  vcpkg-install-deps
