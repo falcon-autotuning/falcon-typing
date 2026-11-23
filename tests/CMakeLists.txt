@@ -5,6 +5,7 @@ include(GoogleTest)
 
 add_executable(falcon-typing-tests
   test_primitive_types.cpp
+  test_runtime_context.cpp
 )
 
 target_link_libraries(falcon-typing-tests

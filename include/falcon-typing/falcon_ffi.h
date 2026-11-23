@@ -11,11 +11,11 @@
  *               FalconResultSlot*, int32_t*);
  */
 #pragma once
-#include <cstdint>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include <stdint.h>
 
 /* -------------------------------------------------------------------------
  * Type tags
@@ -90,6 +90,56 @@ using FalconFFIFunc = void (*)(
     FalconResultSlot *out_slots,
     int32_t *out_count /* in: capacity; out: written count */
 );
+
+/* -------------------------------------------------------------------------
+ * Runtime semantics & context (optional host callbacks)
+ * -------------------------------------------------------------------------
+ * FalconRuntimeContext represents the language semantics of a specific
+ * Falcon execution universe (equality, ordering, deep-copy, type/function
+ * dispatch).
+ *
+ * If your library needs to perform runtime operations on opaque or dynamic
+ * Falcon values (such as checking element equality inside a container):
+ *   1. Store a static pointer:
+ *        static const FalconRuntimeAPI* g_runtime = nullptr;
+ *   2. Export the optional initialization hook:
+ *        extern "C" void FalconRuntimeInit(const FalconRuntimeAPI* api) {
+ *          g_runtime = api;
+ *        }
+ *      The engine will automatically look up and invoke this symbol via
+ *      dlsym immediately after loading the library.
+ *   3. Always pass `g_runtime->context` as the first argument when invoking
+ *      any callback (e.g., `g_runtime->equals(g_runtime->context, &a, &b)`).
+ *   4. Guard against `g_runtime == nullptr` if your library might be loaded
+ *      in standalone or test environments where the hook is not invoked.
+ * -----------------------------------------------------------------------*/
+typedef struct FalconRuntimeContext FalconRuntimeContext;
+
+typedef struct FalconRuntimeAPI {
+  FalconRuntimeContext *context;
+
+  int32_t (*equals)(FalconRuntimeContext *context, const FalconParamEntry *lhs,
+                    const FalconParamEntry *rhs);
+
+  int32_t (*not_equals)(FalconRuntimeContext *context,
+                        const FalconParamEntry *lhs,
+                        const FalconParamEntry *rhs);
+
+  int32_t (*less_than)(FalconRuntimeContext *context,
+                       const FalconParamEntry *lhs,
+                       const FalconParamEntry *rhs);
+
+  int32_t (*greater_than)(FalconRuntimeContext *context,
+                          const FalconParamEntry *lhs,
+                          const FalconParamEntry *rhs);
+
+  void (*deep_copy)(FalconRuntimeContext *context,
+                    const FalconParamEntry *input, FalconResultSlot *output,
+                    int32_t *output_count);
+} FalconRuntimeAPI;
+
+/* Optional initialization hook exported by wrapper libraries */
+void FalconRuntimeInit(const FalconRuntimeAPI *api);
 
 #ifdef __cplusplus
 } /* extern "C" */

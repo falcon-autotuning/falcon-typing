@@ -7,8 +7,6 @@
 
 #include "falcon-typing/FFIHelpers.hpp"
 #include "falcon-typing/PrimitiveTypes.hpp"
-#include <cstdlib>
-#include <cstring>
 #include <gtest/gtest.h>
 
 using namespace falcon::typing;

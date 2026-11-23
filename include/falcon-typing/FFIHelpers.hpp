@@ -81,19 +81,20 @@ inline PackedParams pack_params(const ParameterMap &params) {
               e.value.opaque.deleter = [](void *p) {
                 delete static_cast<SP *>(p);
               };
-            } else if constexpr (std::is_same_v<SP, std::shared_ptr<ArrayValue>>) {
+            } else if constexpr (std::is_same_v<SP,
+                                                std::shared_ptr<ArrayValue>>) {
               e.value.opaque.type_name = "ArrayValue";
               e.value.opaque.deleter = [](void *p) {
                 delete static_cast<SP *>(p);
               };
-            } else if constexpr (std::is_same_v<SP, std::shared_ptr<StructInstance>>) {
+            } else if constexpr (std::is_same_v<
+                                     SP, std::shared_ptr<StructInstance>>) {
               if (val && val->is_native()) {
                 // Native FFI struct: forward the native_handle as a
                 // shared_ptr<void>* so the wrapper can static_pointer_cast
                 // it back to the concrete type.
                 auto *svp = new std::shared_ptr<void>(
-                    std::static_pointer_cast<void>(
-                        val->native_handle.value()));
+                    std::static_pointer_cast<void>(val->native_handle.value()));
                 delete heap_sp;
                 e.value.opaque.ptr = svp;
                 e.value.opaque.type_name = val->type_name.c_str();
@@ -156,19 +157,23 @@ inline FunctionResult unpack_results(FalconResultSlot *slots, int32_t count) {
       if (tn == "TupleValue") {
         using SP = std::shared_ptr<TupleValue>;
         rv = *static_cast<SP *>(ptr);
-        if (del != nullptr) del(ptr);
+        if (del != nullptr)
+          del(ptr);
       } else if (tn == "ArrayValue") {
         using SP = std::shared_ptr<ArrayValue>;
         rv = *static_cast<SP *>(ptr);
-        if (del != nullptr) del(ptr);
+        if (del != nullptr)
+          del(ptr);
       } else if (tn == "StructInstance") {
         using SP = std::shared_ptr<StructInstance>;
         rv = *static_cast<SP *>(ptr);
-        if (del != nullptr) del(ptr);
+        if (del != nullptr)
+          del(ptr);
       } else if (tn == "ErrorObject") {
         using SP = std::shared_ptr<ErrorObject>;
         rv = **static_cast<SP *>(ptr);
-        if (del != nullptr) del(ptr);
+        if (del != nullptr)
+          del(ptr);
       } else {
         // Unknown user opaque (e.g. "InstrumentPort", "Ports", "Array", etc.)
         //
@@ -179,7 +184,8 @@ inline FunctionResult unpack_results(FalconResultSlot *slots, int32_t count) {
         auto inner_sp = *reinterpret_cast<std::shared_ptr<void> *>(ptr);
         auto inst = std::make_shared<StructInstance>(tn);
         inst->native_handle = inner_sp;
-        if (del) del(ptr);
+        if (del)
+          del(ptr);
         rv = std::move(inst);
       }
       result.push_back(std::move(rv));
@@ -282,7 +288,8 @@ inline std::shared_ptr<T> get_opaque(const FalconParamEntry *entries,
     if (std::strcmp(entries[i].key, key) == 0 &&
         entries[i].tag == FALCON_TYPE_OPAQUE) {
       // ptr is a heap-allocated shared_ptr<void>* (alias to T).
-      auto sv = *static_cast<std::shared_ptr<void> *>(entries[i].value.opaque.ptr);
+      auto sv =
+          *static_cast<std::shared_ptr<void> *>(entries[i].value.opaque.ptr);
       return std::static_pointer_cast<T>(sv);
     }
   }
@@ -334,9 +341,11 @@ inline void pack_results(const FunctionResult &result, FalconResultSlot *slots,
             s.value.opaque.ptr = heap_sp;
             if constexpr (std::is_same_v<SP, std::shared_ptr<TupleValue>>) {
               s.value.opaque.type_name = "TupleValue";
-            } else if constexpr (std::is_same_v<SP, std::shared_ptr<ArrayValue>>) {
+            } else if constexpr (std::is_same_v<SP,
+                                                std::shared_ptr<ArrayValue>>) {
               s.value.opaque.type_name = "ArrayValue";
-            } else if constexpr (std::is_same_v<SP, std::shared_ptr<StructInstance>>) {
+            } else if constexpr (std::is_same_v<
+                                     SP, std::shared_ptr<StructInstance>>) {
               if (val && val->is_native()) {
                 // Native FFI struct: pack native_handle as shared_ptr<void>*
                 // so unpack_results on the engine side can recover it.
