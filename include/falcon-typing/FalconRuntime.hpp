@@ -159,6 +159,12 @@ inline bool operator>(const falcon::typing::RuntimeValue &lhs,
 
 } // namespace falcon::typing
 
-extern "C" inline void FalconRuntimeInit(const FalconRuntimeAPI *api) {
+#ifdef FALCON_IMPLEMENT_RUNTIME_HOOK
+
+extern "C" void FalconRuntimeInit(const FalconRuntimeAPI *api) {
   falcon::typing::ffi::wrapper::Runtime::init(api);
 }
+
+#else
+
+#endif
