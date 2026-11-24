@@ -25,9 +25,9 @@
 
 #pragma once
 
-#include "falcon-typing/PrimitiveTypes.hpp"
 #include "falcon-typing/falcon_ffi.h"
 #include <stdexcept>
+#include <vector>
 namespace falcon::typing::ffi::wrapper {
 class Runtime {
 public:
@@ -64,7 +64,7 @@ public:
   static std::vector<FalconResultSlot> deep_copy(const FalconParamEntry &input,
                                                  int32_t max_slots = 1) {
     const auto &api = require();
-    if (!api.deep_copy) {
+    if (api.deep_copy == nullptr) {
       throw std::runtime_error("FalconRuntimeAPI: deep_copy not supported");
     }
 
@@ -83,7 +83,7 @@ private:
   static inline const FalconRuntimeAPI *instance_ = nullptr;
 
   static const FalconRuntimeAPI &require() {
-    if (!instance_) {
+    if (instance_ == nullptr) {
       throw std::runtime_error("FalconRuntime has not been initialized");
     }
     return *instance_;
@@ -92,7 +92,7 @@ private:
   static bool invoke_predicate(PredicateFn fn, const FalconParamEntry &lhs,
                                const FalconParamEntry &rhs) {
     const auto &api = require();
-    if (!fn) {
+    if (fn == nullptr) {
       throw std::runtime_error("FalconRuntimeAPI: requested predicate is null");
     }
     const int32_t res = fn(api.context, &lhs, &rhs);

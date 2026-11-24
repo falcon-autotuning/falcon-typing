@@ -6,8 +6,10 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <variant>
 #include <vector>
+// TODO: remove all operator== and operator!= since falcon runtime used instead
 
 namespace falcon::typing {
 
@@ -33,7 +35,8 @@ struct ErrorObject {
   ErrorObject() = default;
   explicit ErrorObject(std::string msg, bool fatal = false)
       : message(std::move(msg)), is_fatal(fatal) {}
-
+  // Can be specified since does not contain RuntimeValue recursion, so like
+  // primitive
   bool operator==(const ErrorObject &other) const {
     return this->message == other.message && this->is_fatal == other.is_fatal;
   }
@@ -53,10 +56,8 @@ struct ErrorObject {
 // ---------------------------------------------------------------------------
 using RuntimeValue =
     std::variant<int64_t, double, bool, std::string, std::nullptr_t,
-                 ErrorObject,
-                 std::shared_ptr<TupleValue>,
-                 std::shared_ptr<StructInstance>,
-                 std::shared_ptr<ArrayValue>>;
+                 ErrorObject, std::shared_ptr<TupleValue>,
+                 std::shared_ptr<StructInstance>, std::shared_ptr<ArrayValue>>;
 
 // ---------------------------------------------------------------------------
 // TupleValue — a fixed-length ordered tuple of RuntimeValues.
@@ -69,13 +70,9 @@ struct TupleValue {
   explicit TupleValue(std::vector<RuntimeValue> vals)
       : values(std::move(vals)) {}
 
-  bool operator==(const TupleValue &other) const {
-    return values == other.values;
-  }
-  bool operator!=(const TupleValue &other) const { return !(*this == other); }
   [[nodiscard]] size_t size() const { return values.size(); }
-  RuntimeValue &operator[](size_t idx) { return values[idx]; }
-  const RuntimeValue &operator[](size_t idx) const { return values[idx]; }
+  RuntimeValue &operator[](size_t idx) { return values.at(idx); }
+  const RuntimeValue &operator[](size_t idx) const { return values.at(idx); }
 };
 
 // ---------------------------------------------------------------------------
@@ -99,14 +96,9 @@ struct ArrayValue {
   ArrayValue(std::string elem_type, std::vector<RuntimeValue> elems)
       : element_type_name(std::move(elem_type)), elements(std::move(elems)) {}
 
-  bool operator==(const ArrayValue &other) const {
-    return element_type_name == other.element_type_name &&
-           elements == other.elements;
-  }
-  bool operator!=(const ArrayValue &other) const { return !(*this == other); }
   [[nodiscard]] size_t size() const { return elements.size(); }
-  RuntimeValue &operator[](size_t idx) { return elements[idx]; }
-  const RuntimeValue &operator[](size_t idx) const { return elements[idx]; }
+  RuntimeValue &operator[](size_t idx) { return elements.at(idx); }
+  const RuntimeValue &operator[](size_t idx) const { return elements.at(idx); }
 };
 
 // ---------------------------------------------------------------------------
@@ -151,13 +143,7 @@ struct StructInstance {
     return fieldIter->second;
   }
   void set_field(const std::string &fieldName, RuntimeValue val) {
-    (*fields)[fieldName] = val;
-  }
-  bool operator==(const StructInstance &other) const {
-    return type_name == other.type_name && *fields == *other.fields;
-  }
-  bool operator!=(const StructInstance &other) const {
-    return !(*this == other);
+    (*fields)[fieldName] = std::move(val);
   }
 };
 
