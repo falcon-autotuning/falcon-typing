@@ -134,8 +134,7 @@ typedef struct FalconRuntimeAPI {
                           const FalconParamEntry *rhs);
 
   void (*deep_copy)(FalconRuntimeContext *context,
-                    const FalconParamEntry *input, FalconResultSlot *output,
-                    int32_t *output_count);
+                    const FalconParamEntry *input, FalconResultSlot *output);
 } FalconRuntimeAPI;
 
 /* Optional initialization hook exported by wrapper libraries */

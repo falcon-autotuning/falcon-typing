@@ -9,7 +9,6 @@
 #include <utility>
 #include <variant>
 #include <vector>
-// TODO: remove all operator== and operator!= since falcon runtime used instead
 
 namespace falcon::typing {
 
